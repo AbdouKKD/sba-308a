@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
       : `https://api.thecatapi.com/v1/images/search`;
 
     try {
-      console.log(`Requesting cat image from URL: ${url}`);
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -25,52 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (!response.ok) {
-        console.error(`Error fetching data: ${response.statusText}`);
         throw new Error("Network response was not ok");
       }
 
       const data = await response.json();
-      console.log("API Response:", data);
-
       if (data.length > 0) {
         return data[0].url;
       } else {
-        console.error("No cat images found");
         return null;
       }
     } catch (error) {
-      console.error("Error fetching cat image:", error);
       return null;
     }
-  };
-
-  const getCatBreeds = async () => {
-    const url = `https://api.thecatapi.com/v1/breeds`;
-    try {
-      console.log("Requesting cat breeds");
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "x-api-key": API_KEY,
-        },
-      });
-
-      if (!response.ok) {
-        console.error(`Error fetching data: ${response.statusText}`);
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-      console.log("API Breeds Response:", data);
-      return data;
-    } catch (error) {
-      console.error("Error fetching cat breeds:", error);
-      return [];
-    }
-  };
-
-  const postFavorite = async (catImage) => {
-    console.log("Favorite cat added:", catImage);
   };
 
   const updateGallery = async () => {
@@ -104,9 +69,25 @@ document.addEventListener("DOMContentLoaded", () => {
     await updateGallery();
   };
 
+  const addToFavorites = (catImageUrl) => {
+    let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    if (!favorites.includes(catImageUrl)) {
+      favorites.push(catImageUrl);
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+      alert("Cat added to favorites!");
+    } else {
+      alert("This cat is already in your favorites.");
+    }
+  };
+
   const favoriteHandler = async () => {
-    const imageUrl = galleryContainer.querySelector("img").src;
-    await postFavorite(imageUrl);
+    const imgElement = galleryContainer.querySelector("img");
+    if (imgElement) {
+      const imageUrl = imgElement.src;
+      addToFavorites(imageUrl);
+    } else {
+      alert("No cat image to add to favorites.");
+    }
   };
 
   nextButton.addEventListener("click", async () => {
@@ -124,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
   favoriteButton.addEventListener("click", favoriteHandler);
 
   const initGallery = async () => {
-    await getCatBreeds();
     await updateGallery();
   };
 
